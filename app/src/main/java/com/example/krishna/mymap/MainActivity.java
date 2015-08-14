@@ -96,9 +96,16 @@ public class MainActivity extends FragmentActivity {
         Toast.makeText(this, "adding Lines", Toast.LENGTH_SHORT).show();
     }
 
+    public void getPolygonPoint(GoogleMap map, MyMapPoints src, MyMapPoints dest){
+        map.addPolyline((new PolylineOptions())
+                .add(src.getLatLng(), src.getLatLng())
+                .width(5).color(src.getColorValue())
+                .geodesic(true));
+    }
+
     private void addMarketPointsOnMap(MyMapPoints src, MyMapPoints dest){
         googleMap.addMarker(new MarkerOptions().position(src.getLatLng()).title(src.getLocation()));
-        AsyncTask task=new connectAsyncTask(this, makeURL(src.getLat(), src.getLng(), dest.getLat(), dest.getLng()));
+        AsyncTask task=new connectAsyncTask(this, makeURL(src.getLat(), src.getLng(), dest.getLat(), dest.getLng()), src.getColorValue());
         task.execute();
     }
 
@@ -129,7 +136,7 @@ public class MainActivity extends FragmentActivity {
         return urlString.toString();
     }
 
-    public void drawPath(String  result) {
+    public void drawPath(String  result, int color) {
 
         try {
             //Tranform the string into a json object
@@ -147,9 +154,8 @@ public class MainActivity extends FragmentActivity {
                 Polyline line = googleMap.addPolyline(new PolylineOptions()
                         .add(new LatLng(src.latitude, src.longitude), new LatLng(dest.latitude,   dest.longitude))
                         .width(2)
-                        .color(Color.BLUE).geodesic(true));
+                        .color(color).geodesic(true));
             }
-
         }
         catch (JSONException e) {
 
@@ -194,9 +200,12 @@ public class MainActivity extends FragmentActivity {
         private ProgressDialog progressDialog;
         private MainActivity context;
         String url;
-        connectAsyncTask(MainActivity context, String urlPass){
+        private int color;
+
+        connectAsyncTask(MainActivity context, String urlPass, int color){
             this.context = context;
             url = urlPass;
+            this.color = color;
         }
         @Override
         protected void onPreExecute() {
@@ -223,7 +232,7 @@ public class MainActivity extends FragmentActivity {
             Log.d("connectAsyncTask", "onPostExecute (Line:201) :"+result);
             Toast.makeText(context, "added map points", Toast.LENGTH_SHORT).show();
             if(result!=null){
-                context.drawPath(result);
+                context.drawPath(result, color);
             }
         }
     }
@@ -532,6 +541,22 @@ class MyMapPoints{
         this.lat = lat;
         this.lng = lng;
         this.clr = clr;
+    }
+
+    public int getColorValue(){
+        switch (clr){
+            case "Yellow":
+                return Color.YELLOW;
+            case "Red":
+                return Color.RED;
+            case "Blue":
+                return Color.BLUE;
+            case "Green":
+                return Color.GREEN;
+            case "Cyan":
+                return Color.CYAN;
+        }
+        return Color.BLACK;
     }
 
     public LatLng getLatLng(){
